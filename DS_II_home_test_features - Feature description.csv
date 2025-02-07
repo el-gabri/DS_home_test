@@ -1,0 +1,99 @@
+Feature,Description
+event_created_at,Transaction date
+amount,Transaction amount
+infraction,Label if it is fraud or not
+merchant_code,Merchant ID
+mc_weeks_signup,Weeks after signup
+mc_atm_br_tx_out_count_lifetime,Number of ATM withdrawals lifetime
+mc_credit_transfer_out_br_sum_last_30d,Total volume of transfers to third parties
+mc_billpay_br_sum_last_15d,Total volume of bill payments (boleto) made
+mc_billpay_br_count_last_1y,Number of bill payments (boleto) made
+mc_credit_transfer_out_br_sum_last_1y,Total volume of transfers to third parties
+mc_billpay_br_count_sanction_last_30d,Number of bill payments (boleto) made by Sanctioned individuals
+mc_pur_br_count_last_1y,Number of purchases made
+mc_billpay_br_count_last_15d,Number of bill payments (boleto) made
+mc_atm_br_tx_out_count_last_1y,Number of ATM withdrawals
+mc_sanction_count_last_2d,Number of counterparties listed as Sanctioned individuals
+mc_credit_transfer_in_rounded_amounts_br_sum_last_30d,Total volume of all credit transfer in transactions with rounded amounts (modulo 1000)
+mc_pur_br_sum_last_15d,Total volume of purchases made
+mc_credit_transfer_in_br_sum_last_180d,Total volume of transfers from third parties
+mc_credit_transfer_out_br_count_lifetime,Number of transfers to third parties lifetime
+mc_credit_transfer_out_br_count_sanction_last_30d,Number of transfers to third parties involving Sanctioned individuals
+mc_credit_transfer_out_br_count_last_15d,Number of transfers to third parties
+mc_pur_br_count_last_15d,Number of purchases made
+mc_pep_count_last_2d,Number of counterparties listed as PEP
+mc_credit_transfer_in_br_sum_last_120d,Total volume of transfers from third parties
+mc_pur_br_count_lifetime,Number of purchases made lifetime
+mc_credit_transfer_in_br_count_last_30d,Number of transfers from third parties
+mc_credit_transfer_in_br_sum_last_90d,Total volume of transfers from third parties
+mc_credit_transfer_out_br_count_last_1y,Number of transfers to third parties
+mc_billpay_br_sum_last_1y,Total volume of bill payments (boleto) made
+mc_billpay_br_count_pep_br_last_30d,Number of bill payments (boleto) made by PEP
+mc_credit_transfer_in_br_count_pep_br_last_30d,Number of transfers from third parties involving PEP
+mc_credit_transfer_out_rounded_amounts_br_sum_last_30d,Total volume of all credit transfer out transactions with rounded amounts (modulo 1000)
+mc_credit_transfer_out_br_sum_last_15d,Total volume of transfers to third parties
+mc_credit_transfer_in_br_count_sanction_last_30d,Number of transfers from third parties involving Sanctioned individuals
+mc_credit_transfer_in_br_sum_last_15d,Total volume of transfers from third parties
+mc_billpay_br_count_lifetime,Number of bill payments (boleto) made lifetime
+mc_atm_br_tx_out_count_last_15d,Number of ATM withdrawals
+mc_credit_transfer_out_rounded_amounts_br_count_last_30d,Number of all credit transfer out transactions with rounded amounts (modulo 1000)
+mc_credit_transfer_in_br_sum_last_60d,Total volume of transfers from third parties
+mc_pur_br_sum_last_1y,Total volume of purchases made
+mc_credit_transfer_out_br_count_pep_br_last_30d,Number of transfers to third parties involving PEP
+mc_chip_tx_succ_count_30d,Count successful transactions with chip as read method by merchant in the last 30 days.
+mc_chip_tx_decl_ext_count_7d,Count decline external transactions with chip as read method by merchant in the last 7 days.
+mc_chip_tx_amount_local_decl_ext_sum_15d,Calculate total decline external transactions with chip as read method by merchant (local currency) in the last 15 days.
+mc_chip_tx_amount_succ_sum_7d,Calculate total successful transactions with chip as read method by merchant in the last 7 days.
+mc_chip_tx_amount_local_succ_sum_7d,Calculate total successful transactions with chip as read method by merchant (local currency) in the last 7 days.
+mc_chip_tx_amount_local_succ_sum_15d,Calculate total successful transactions with chip as read method by merchant (local currency) in the last 15 days.
+mc_chip_tx_amount_decl_ext_sum_30d,Calculate total decline external transactions with chip as read method by merchant in the last 30 days.
+mc_chip_tx_amount_succ_sum_30d,Calculate total successful transactions with chip as read method by merchant in the last 30 days.
+mc_chip_tx_succ_count_7d,Count successful transactions with chip as read method by merchant in the last 7 days.
+decline_ext_rate_30d,"The number of transactions declined externally (Bank, Visa, etc) in the last 30 days"
+mc_tx_cp_mean_decl_ext_last_31d_mw,"Mean of external declined transactions (e.g., by Bank, Visa) at the card present transactions in the last 31 days, using a moving window."
+mc_tx_amount_sum_last_60m,Total transaction amount in the last 60 minutes.
+mc_tx_amount_decl_ext_sum_lifetime,"Total amount of externally declined transactions (e.g., by Bank, Visa) for the lifetime."
+mc_tx_amount_succ_sum_last_30d,Total amount of successful transactions in the last 30 days.
+mc_tx_succ_count_last_24h,Number of successful transactions in the last 24 hours.
+mc_tx_amount_succ_sum_last_14d,Total amount of successful transactions in the last 14 days.
+mc_tx_amount_fail_sum_last_60m,Total amount of failed transactions in the last 60 minutes.
+mc_tx_amount_succ_sum_last_60m,Total amount of successful transactions in the last 60 minutes.
+mc_tx_amount_succ_sum_last_2d,Total amount of successful transactions in the last 2 days.
+mc_tx_amount_succ_sum_last_90d,Total amount of successful transactions in the last 90 days.
+mc_tx_amount_fail_sum_last_14d,Total amount of failed transactions in the last 14 days.
+mc_tx_amount_succ_sum_lifetime,Total amount of successful transactions for the lifetime.
+mc_tx_amount_pend_sum_last_2d,Total amount of pending transactions in the last 2 days.
+mc_tx_amount_decl_int_sum_lifetime,Total amount of internally declined transactions for the lifetime.
+mc_tx_amount_sum_last_24h,Total amount of transactions in the last 24 hours.
+mc_tx_amount_sum_lifetime,Total amount of transactions for the lifetime.
+mc_tx_succ_count_last_14d,Number of successful transactions in the last 14 days.
+mc_tx_succ_count_lifetime,Number of successful transactions for the lifetime.
+mc_tx_amount_succ_sum_last_24h,Total amount of successful transactions in the last 24 hours.
+mc_tx_amount_pend_sum_last_14d,Total amount of pending transactions in the last 14 days.
+mc_tx_amount_decl_ext_sum_last_14d,Total amount of externally declined transactions in the last 14 days.
+mc_tx_amount_decl_ext_sum_last_24h,Total amount of externally declined transactions in the last 24 hours.
+mc_tx_amount_decl_ext_sum_last_60m,Total amount of externally declined transactions in the last 60 minutes.
+mc_tx_succ_count_last_2d,Number of successful transactions in the last 2 days.
+mc_tx_amount_fail_sum_lifetime,Total amount of failed transactions for the lifetime.
+mc_tx_succ_count_last_30d,Number of successful transactions in the last 30 days.
+mc_tx_amount_sum_last_2d,Total amount of transactions in the last 2 days.
+mc_tx_succ_count_last_365d,Number of successful transactions in the last 365 days.
+mc_tx_succ_count_last_60m,Number of successful transactions in the last 60 minutes.
+mc_tx_amount_sum_last_14d,Total amount of transactions in the last 14 days.
+mc_tx_cp_sum_decl_ext_last_24h,Total amount of externally declined transactions at the card present transactions in the last 24 hours.
+mc_tx_cp_dbt_sum_sq_decl_ext_last_30d,Square of the total debit amount of externally declined transactions at the card present transactions in the last 30 days.
+mc_tx_count_decl_ext_last_30d,Number of externally declined transactions in the last 30 days.
+mc_tx_cp_sum_decl_ext_last_30d,Total amount of externally declined transactions at the card present transactions in the last 30 days.
+mc_tx_cp_count_decl_ext_last_24h,Number of externally declined transactions at the card present transactions in the last 24 hours.
+mc_tx_cp_dbt_sum_sq_fail_last_24h,Square of the total debit amount of failed transactions at the card present transactions in the last 24 hours.
+mc_tx_cp_count_decl_ext_last_30d,Number of externally declined transactions at the card present transactions in the last 30 days.
+mc_tx_cp_dbt_sum_sq_fail_last_14d,Square of the total debit amount of failed transactions at the card present transactions in the last 14 days.
+mc_merchants_ip_count_dist_shared_last_15d,Number of merchants that shared the same IPs as this merchant in the last 15 days.
+mcc_sum_succ_1y,Total amount of successful transactions by merchant category code (MCC) in the last year.
+mcc_sum_sq_succ_30d,Square of the total amount of successful transactions by MCC in the last 30 days.
+mcc_count_succ_1y,Number of successful transactions by MCC in the last year.
+mcc_sum_sq_succ_1y,Square of the total amount of successful transactions by MCC in the last year.
+mcc_sum_succ_30d,Total amount of successful transactions by MCC in the last 30 days.
+is_legal_entity,LTDA/EI/PJ
+is_mei,Brazilian Individual Microentrepreneur
+is_person,Person
