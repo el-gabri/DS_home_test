@@ -47,41 +47,51 @@ def check_catg(serie: pd.Series, s=7):
 
 def barplot(serie: pd.Series, c='Green'):
     """
-    Função automática de criação de sns.barplot
-    :param serie: Série que origininará o gráfico
-    :param c: Cor do gráfico
-    :return: None
+    Função automática de criação de sns.barplot.
+    :param serie: Série que origininará o gráfico.
+    :param c: Cor do gráfico.
+    :return: None.
     """
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
 
-    # Contabilizando Na's
+    # Contabilizando Na's: substitui NaN por 'Faltante'
     serie = serie.replace(np.nan, 'Faltante', regex=True).copy()
 
     # Gerando dados para plot
     df = serie.value_counts().reset_index()
+    # Force column names so that we know exactly what they are:
+    # The first column will be the category (named 'index') and the second column is the frequency.
+    df.columns = ['index', serie.name]
+    # Now we can safely cast types:
     df = df.astype({'index': str, serie.name: int})
 
     # Separando dados missings
     miss = df[df['index'] == 'Faltante']
 
-    # criando categoria "outros"
+    # Criando categoria "Outros"
     df = df[df['index'] != 'Faltante'].reset_index(drop=True)
     size_outros = 0
     if df.shape[0] > 10:
         size_outros = df.shape[0] - 6
         df_top = df.head(5).copy()
-        df = pd.concat([df_top, pd.DataFrame({'index': ['Outros'],
-                                              serie.name: df.drop([0, 1, 2, 3, 4])[serie.name].sum()})])
+        # Sum the rest of the values
+        sum_outros = df.drop([0, 1, 2, 3, 4])[serie.name].sum()
+        df_outros = pd.DataFrame({'index': ['Outros'], serie.name: [sum_outros]})
+        df = pd.concat([df_top, df_outros])
 
     df = pd.concat([df, miss]).reset_index(drop=True)
 
-    # Display dados
+    # Display dados (para debug)
     df_display = df.copy()
     df_display.columns = [serie.name, 'Freq']
     if size_outros > 0:
         print("Mostrando as maiores categorias de {}".format(df_display.shape[0] + size_outros))
 
     # Setup Plot
-    palette = {catg: c if (catg != 'Outros') & (catg != 'Faltante') else 'gray' if catg != 'Faltante' else 'black'
+    palette = {catg: c if (catg != 'Outros') and (catg != 'Faltante') else ('gray' if catg == 'Outros' else 'black')
                for catg in df['index']}
     altura = 4 if df.shape[0] < 16 else int(len(df['index']) / 4)
     plt.figure(figsize=(14, altura))
@@ -99,15 +109,12 @@ def barplot(serie: pd.Series, c='Green'):
         else:
             plt.annotate('{} - {:.2f}%'.format(x, percent), xy=(x + dif, y), ha='left', va='center', color='black')
 
-    # layout
+    # Layout
     plt.xlim(0, df[serie.name].max() * 1.1)
-
     plt.title('Frequência da coluna {}'.format(serie.name))
     plt.xlabel('Frequência')
     plt.ylabel(serie.name.title().replace('_', ' '))
     plt.show()
-
-    return
 
 
 def time_plot(serie: pd.Series, c='Green', stats=True):
@@ -119,13 +126,15 @@ def time_plot(serie: pd.Series, c='Green', stats=True):
     :return: None
     """
 
+    # Garantir que a série esteja em datetime
     if serie.dtype != 'datetime64[ns]':
         serie = serie.astype(str)
         serie = pd.to_datetime(serie, format='%Y%m%d', errors='coerce')
 
-    # Contabilizando Na's
+    # Contabilizando Na's e mostrando o range
     print('Número de missings: {}'.format(pd.isna(serie).sum()))
-    print('Range da série: {} - {}'.format(serie.min().strftime('%d/%b/%Y'), serie.max().strftime('%d/%b/%Y')))
+    print('Range da série: {} - {}'.format(serie.min().strftime('%d/%b/%Y'),
+                                           serie.max().strftime('%d/%b/%Y')))
 
     dias = (serie.max() - serie.min()).days
     if dias // 365 == 1:
@@ -134,37 +143,46 @@ def time_plot(serie: pd.Series, c='Green', stats=True):
         print('\t- {}Anos {}Meses {}dias'.format(dias // 365, (dias % 365) // 30, (dias % 365) % 30))
 
     # Destrinchando a série em dia, mês e ano
+    serie_dia = serie.dt.strftime('%d/%m/%Y').copy()
     serie_mes = serie.dt.strftime('%b/%Y').copy()
     serie_ano = serie.dt.strftime('%Y').copy()
 
-    # Gerando dados para plots
-    df_dia = serie.value_counts()  # frequencia
-    df_dia = df_dia.reindex(pd.date_range(serie.min(), serie.max())).fillna(0)  # arrumando os dias
+    # Para os dados diários:
+    df_dia = serie_dia.value_counts().rename(serie.name)
+    df_dia.index.name = "day"  # define um nome diferente para o índice
     df_dia = df_dia.reset_index()
-    df_dia['media movel (30)'] = df_dia[serie.name].rolling(window=30).mean()  # média movel
+    df_dia['date'] = pd.to_datetime(df_dia['day'], format='%d/%m/%Y')
+    df_dia['media movel (30)'] = df_dia[serie.name].rolling(window=30).mean()
+    df_dia.sort_values('date', inplace=True)
 
-    df_mes = serie_mes.value_counts().reset_index()
-    df_mes['date'] = pd.to_datetime(df_mes['index'])
+    # Para os dados mensais:
+    df_mes = serie_mes.value_counts().rename(serie.name)
+    df_mes.index.name = "month"  # define um nome diferente para o índice
+    df_mes = df_mes.reset_index()
+    df_mes['date'] = pd.to_datetime(df_mes['month'], format='%b/%Y')
     df_mes.sort_values('date', inplace=True)
 
-    df_ano = serie_ano.value_counts().reset_index()
-    df_ano['date'] = pd.to_datetime(df_ano['index'])
+    # Para os dados anuais:
+    df_ano = serie_ano.value_counts().rename(serie.name)
+    df_ano.index.name = "year"  # define um nome diferente para o índice
+    df_ano = df_ano.reset_index()
+    df_ano['date'] = pd.to_datetime(df_ano['year'], format='%Y')
     df_ano.sort_values('date', inplace=True)
 
     # Plots
     fig, ax = plt.subplots(3, figsize=(15, 8))
 
-    sns.lineplot(x='index', y=serie.name, color=c, data=df_dia, ax=ax[0])
+    sns.lineplot(x='date', y=serie.name, color=c, data=df_dia, ax=ax[0])
 
-    sns.barplot(x='index', y=serie.name, color=c, data=df_mes, ax=ax[1])
+    sns.barplot(x='month', y=serie.name, color=c, data=df_mes, ax=ax[1])
     for x, y in enumerate(df_mes[serie.name]):
         ax[1].annotate(y, xy=(x, y), ha='center', va='bottom')
 
-    sns.barplot(x='index', y=serie.name, color=c, data=df_ano, ax=ax[2])
+    sns.barplot(x='year', y=serie.name, color=c, data=df_ano, ax=ax[2])
     for x, y in enumerate(df_ano[serie.name]):
         ax[2].annotate(y, xy=(x, y), ha='center', va='bottom')
 
-    # Setup plots
+    # Setup dos plots
     ax[0].set_title('Distribuição de {} por dia'.format(serie.name))
     ax[1].set_title('Distribuição de {} por mes'.format(serie.name))
     ax[2].set_title('Distribuição de {} por ano'.format(serie.name))
@@ -185,20 +203,19 @@ def time_plot(serie: pd.Series, c='Green', stats=True):
     plt.show()
 
     if stats:
-        # Estacionaridade
+        # Estacionaridade: Teste Dickey-Fuller
         p_value = sm.tsa.stattools.adfuller(df_dia[serie.name])[1]
-        print('\n\n')
-        print(27 * '##', 'Estatísticas', 27 * '##', '\n')
+        print('\n\n' + 27 * '##' + ' Estatísticas ' + 27 * '##' + '\n')
 
-        # Plots estatisticos
+        # Plots estatísticos
         plt.figure(figsize=(15, 8))
         ax1 = plt.subplot2grid((2, 2), (0, 0), colspan=2)
         ax2 = plt.subplot2grid((2, 2), (1, 0))
         ax3 = plt.subplot2grid((2, 2), (1, 1))
 
-        sns.lineplot(x='index', y=serie.name, color=c, data=df_dia, label='Dados', ax=ax1)
-        sns.lineplot(x='index', y='media movel (30)', color='firebrick', data=df_dia, label='Média movel (30 dias)',
-                     ax=ax1)
+        sns.lineplot(x='date', y=serie.name, color=c, data=df_dia, label='Dados', ax=ax1)
+        sns.lineplot(x='date', y='media movel (30)', color='firebrick',
+                     data=df_dia, label='Média movel (30 dias)', ax=ax1)
 
         plot_acf(df_dia[serie.name], ax=ax2)
         plot_pacf(df_dia[serie.name], ax=ax3)

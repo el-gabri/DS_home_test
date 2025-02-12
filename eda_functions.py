@@ -1,16 +1,15 @@
+from math import floor
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from math import floor
-import plotly
-import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
-# séries temporais
-
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from statsmodels.tsa.stattools import kpss, adfuller, pacf, acf
+
+
+# séries temporais
 
 
 def data_info(df: pd.DataFrame):
