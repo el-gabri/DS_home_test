@@ -1,0 +1,27 @@
+Column,Null_Percentage,Fraud_Rate_Null,Fraud_Rate_Not_Null,Relative_Difference,Chi_Square,P_Value,Is_Significant,Conclusion
+mc_atm_br_tx_out_count_lifetime,0.38,0.0995,0.0047,20.23,6752.662625998831,0.00e+00,True,Related to fraud
+mc_billpay_br_count_last_1y,0.39,0.099,0.0047,20.14,6735.611745020643,0.00e+00,True,Related to fraud
+mc_pur_br_count_last_1y,0.39,0.099,0.0047,20.14,6735.611745020643,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_sum_last_1y,1.25,0.0389,0.0046,7.41,2856.3218692588243,0.00e+00,True,Related to fraud
+mc_billpay_br_count_last_15d,1.59,0.0327,0.0046,6.11,2434.7144368975346,0.00e+00,True,Related to fraud
+mc_atm_br_tx_out_count_last_1y,0.39,0.099,0.0047,20.14,6735.611745020643,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_count_lifetime,0.38,0.0995,0.0047,20.23,6752.662625998831,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_sum_last_180d,1.11,0.0416,0.0046,7.96,2951.883219448516,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_sum_last_120d,1.27,0.0371,0.0046,6.99,2602.608980836497,0.00e+00,True,Related to fraud
+mc_pur_br_count_last_15d,1.59,0.0327,0.0046,6.11,2434.7144368975346,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_count_sanction_last_30d,0.89,0.0507,0.0046,9.93,3680.483396590651,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_count_last_15d,1.59,0.0327,0.0046,6.11,2434.7144368975346,0.00e+00,True,Related to fraud
+mc_pur_br_count_lifetime,0.38,0.0995,0.0047,20.23,6752.662625998831,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_count_last_1y,0.39,0.099,0.0047,20.14,6735.611745020643,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_sum_last_90d,1.41,0.034,0.0046,6.33,2360.6266025615864,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_count_last_30d,0.89,0.0507,0.0046,9.93,3680.483396590651,0.00e+00,True,Related to fraud
+mc_atm_br_tx_out_count_last_15d,1.59,0.0327,0.0046,6.11,2434.7144368975346,0.00e+00,True,Related to fraud
+mc_billpay_br_count_lifetime,0.38,0.0995,0.0047,20.23,6752.662625998831,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_sum_last_60d,1.68,0.0292,0.0046,5.3,1963.376638847368,0.00e+00,True,Related to fraud
+mc_credit_transfer_in_br_count_sanction_last_30d,0.89,0.0507,0.0046,9.93,3680.483396590651,0.00e+00,True,Related to fraud
+mc_credit_transfer_out_br_sum_last_30d,2.75,0.0208,0.0046,3.52,1380.8725877057411,3.01e-302,True,Related to fraud
+mc_tx_cp_mean_decl_ext_last_31d_mw,21.79,0.0004,0.0063,-0.93,1175.2984667139954,1.42e-257,True,Related to fraud
+mc_credit_transfer_in_br_sum_last_15d,3.94,0.0158,0.0046,2.43,931.4231369756272,1.45e-204,True,Related to fraud
+mc_credit_transfer_out_br_sum_last_15d,4.89,0.0135,0.0046,1.92,717.014834327096,5.97e-158,True,Related to fraud
+mc_sanction_count_last_2d,20.52,0.0082,0.0042,0.93,496.95710735531316,4.37e-110,True,Related to fraud
+mc_weeks_signup,1.13,0.0104,0.005,1.08,63.732100118250536,1.43e-15,True,Related to fraud
