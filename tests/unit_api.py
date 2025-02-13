@@ -1,7 +1,6 @@
-import requests
 import json
-from datetime import datetime
 import time
+import requests
 
 
 def test_api():
@@ -59,6 +58,31 @@ def test_api():
 
         # Add delay between requests
         time.sleep(1)
+
+
+from fastapi.testclient import TestClient
+import sys
+import os
+
+# Ensure the api module is in the path.
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "api"))
+from api.main import app
+
+client = TestClient(app)
+
+
+def test_predict_valid_input():
+    # Sample input data matching the Transaction schema.
+    payload = {
+        "amount": 150.0,
+        "merchant_id": 101,
+        "user_id": 202,
+        "transaction_type": "online"
+    }
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 200
+    json_response = response.json()
+    assert "prediction" in json_response
 
 
 if __name__ == "__main__":
