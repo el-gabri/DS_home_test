@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Dict, Any
 import joblib
@@ -7,9 +8,13 @@ from pydantic import BaseModel, Field
 
 # Load the trained model
 MODEL_PATH = "../models/supervised/xgboost_model_20250212_144931.pkl"
+
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model file not found at path: {MODEL_PATH}")
+
 model = joblib.load(MODEL_PATH)
 
-# Initialize FastAPI app
+# Initialize FastAPI api
 app = FastAPI(
     title="Fraud Detection API",
     description="API for real-time fraud detection in financial transactions",
@@ -69,6 +74,8 @@ def preprocess_transaction(transaction: Dict[str, Any]) -> pd.DataFrame:
     df['month'] = now.month
     df['day'] = now.day
     df['hour'] = now.hour
+
+    df['amount'] = df['amount'] * 0.1
 
     # Ensure all required columns are present in the correct order
     # Add any missing columns with default values
