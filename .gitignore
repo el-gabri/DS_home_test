@@ -1,4 +1,5 @@
-sumup_case.parquet
+data/raw/sumup_case.parquet
 .DS_Store
 /.idea/aws.xml
-/notebooks/raw_transactions.csv
+/data/processed/raw_transactions.csv
+/data/processed/df_treated.csv
