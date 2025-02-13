@@ -1,94 +1,102 @@
+from typing import Tuple, Dict, Any
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.base import BaseEstimator
+from imblearn.under_sampling import RandomUnderSampler
+import xgboost as xgb
 import joblib
-import lightgbm as lgb
-from pyod.models.copod import COPOD
+from datetime import datetime
 
 
 class FraudDetectionModel:
-    def __init__(self):
-        self.supervised_model = None
-        self.unsupervised_model = None
-        self.scaler = None
+    """
+    Fraud Detection model wrapper class that handles preprocessing,
+    training, and prediction.
+    """
 
-    def preprocess_features(self, df):
-        """Preprocess features for model input"""
-        # Handle specific columns
-        df['amount'] = df['amount'] / 100
-
-        # Fill specific nulls with 0
-        zero_fill_columns = [
-            'mc_billpay_br_sum_last_15d',
-            'mc_pur_br_sum_last_15d',
-            'mc_billpay_br_sum_last_1y',
-            'mc_pur_br_sum_last_1y',
-            'mc_merchants_ip_count_dist_shared_last_15d'
-        ]
-        df[zero_fill_columns] = df[zero_fill_columns].fillna(0.0)
-
-        return df
-
-    def fit(self, X_train, y_train):
-        """Train both supervised and unsupervised models"""
-        # Initialize and fit scaler
-        self.scaler = StandardScaler()
-        X_scaled = self.scaler.fit_transform(X_train)
-
-        # Train supervised model (LightGBM)
-        self.supervised_model = lgb.LGBMClassifier(
-            n_estimators=1000,
-            learning_rate=0.01,
-            num_leaves=32,
-            feature_fraction=0.7,
-            bagging_fraction=0.7,
-            bagging_freq=5,
-            verbose=-1
-        )
-        self.supervised_model.fit(X_scaled, y_train)
-
-        # Train unsupervised model (COPOD)
-        self.unsupervised_model = COPOD(contamination=0.05)
-        self.unsupervised_model.fit(X_scaled)
-
-    def predict(self, X):
-        """Get predictions from both models"""
-        X_scaled = self.scaler.transform(X)
-
-        # Get supervised predictions
-        supervised_proba = self.supervised_model.predict_proba(X_scaled)[:, 1]
-
-        # Get unsupervised scores
-        unsupervised_scores = self.unsupervised_model.decision_function(X_scaled)
-
-        # Normalize unsupervised scores
-        unsupervised_scores = (unsupervised_scores - np.min(unsupervised_scores)) / \
-                              (np.max(unsupervised_scores) - np.min(unsupervised_scores))
-
-        # Combine scores (70% supervised, 30% unsupervised)
-        combined_scores = 0.7 * supervised_proba + 0.3 * unsupervised_scores
-
-        return {
-            'combined_score': combined_scores,
-            'supervised_score': supervised_proba,
-            'unsupervised_score': unsupervised_scores
+    def __init__(self, model_params: Dict[str, Any] = None):
+        self.model = None
+        self.model_params = model_params or {
+            'learning_rate': 0.01,
+            'max_depth': 5,
+            'n_estimators': 100
         }
+        self.feature_columns = None
 
-    def save_model(self, path):
-        """Save model artifacts"""
-        model_artifacts = {
-            'supervised_model': self.supervised_model,
-            'unsupervised_model': self.unsupervised_model,
-            'scaler': self.scaler
+    def preprocess_features(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+        """
+        Preprocess features for model training or inference.
+        """
+        # Remove unnecessary columns
+        X = df.drop(['infraction', 'event_created_at', 'merchant_id'], axis=1)
+        y = df['infraction'] if 'infraction' in df.columns else None
+
+        # Store feature columns for inference
+        if self.feature_columns is None:
+            self.feature_columns = X.columns.tolist()
+
+        return X, y
+
+    def train(self, df: pd.DataFrame) -> None:
+        """
+        Train the model with undersampling.
+        """
+        # Preprocess data
+        X, y = self.preprocess_features(df)
+
+        # Apply undersampling
+        rus = RandomUnderSampler(sampling_strategy=0.25)
+        X_resampled, y_resampled = rus.fit_resample(X, y)
+
+        # Initialize and train model
+        self.model = xgb.XGBRegressor(**self.model_params)
+        self.model.fit(X_resampled, y_resampled)
+
+    def predict(self, df: pd.DataFrame) -> np.ndarray:
+        """
+        Make predictions on new data.
+        """
+        if self.model is None:
+            raise ValueError("Model not trained. Call train() first.")
+
+        # Preprocess features
+        X, _ = self.preprocess_features(df)
+
+        # Ensure all expected features are present
+        missing_features = set(self.feature_columns) - set(X.columns)
+        if missing_features:
+            raise ValueError(f"Missing features: {missing_features}")
+
+        # Align features with training order
+        X = X[self.feature_columns]
+
+        return self.model.predict_proba(X)[:, 1]
+
+    def save(self, filepath: str) -> None:
+        """
+        Save model to disk.
+        """
+        if self.model is None:
+            raise ValueError("No model to save. Train the model first.")
+
+        model_data = {
+            'model': self.model,
+            'feature_columns': self.feature_columns,
+            'model_params': self.model_params,
+            'timestamp': datetime.now().isoformat()
         }
-        joblib.dump(model_artifacts, path)
+        joblib.dump(model_data, filepath)
 
     @classmethod
-    def load_model(cls, path):
-        """Load saved model"""
-        model = cls()
-        artifacts = joblib.load(path)
-        model.supervised_model = artifacts['supervised_model']
-        model.unsupervised_model = artifacts['unsupervised_model']
-        model.scaler = artifacts['scaler']
-        return model
+    def load(cls, filepath: str) -> 'FraudDetectionModel':
+        """
+        Load model from disk.
+        """
+        model_data = joblib.load(filepath)
+
+        instance = cls()
+        instance.model = model_data['model']
+        instance.feature_columns = model_data['feature_columns']
+        instance.model_params = model_data['model_params']
+
+        return instance

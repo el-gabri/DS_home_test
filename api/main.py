@@ -1,106 +1,136 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Dict, Any
 import pandas as pd
 import numpy as np
-from typing import Dict, Optional
-import joblib
-import redis
 from datetime import datetime
-import json
+import logging
+import uvicorn
+import sys
+import os
 
+# Add parent directory to system path to import model package
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from models.model_package import FraudDetectionModel
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Initialize FastAPI app
 app = FastAPI(
     title="Fraud Detection API",
-    description="Real-time fraud detection API for PIX transactions"
+    description="Real-time fraud detection inference API",
+    version="1.0.0"
 )
 
-# Redis for caching merchant profiles
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
+# Load model at startup
+try:
+    MODEL_PATH = os.getenv('MODEL_PATH', '../models/latest_model.pkl')
+    model = FraudDetectionModel.load(MODEL_PATH)
+    logger.info("Model loaded successfully")
+except Exception as e:
+    logger.error(f"Failed to load model: {str(e)}")
+    raise
 
 
-class Transaction(BaseModel):
-    merchant_id: str
-    amount: float
-    event_created_at: str
-    # Add other required fields based on your model features
+class TransactionRequest(BaseModel):
+    merchant_id: str = Field(..., description="Unique identifier for the merchant")
+    amount: float = Field(..., description="Transaction amount")
+
+    # Add other required fields
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "merchant_id": "MERCH123",
+                "amount": 150.00
+            }
+        }
 
 
-class PredictionResponse(BaseModel):
+class InferenceResponse(BaseModel):
     transaction_id: str
-    risk_score: float
+    fraud_probability: float
+    requires_review: bool
     review_priority: str
-    review_needed: bool
-    supervised_score: float
-    unsupervised_score: float
-    prediction_timestamp: str
+    inference_time_ms: float
 
 
-# Load model on startup
-@app.on_event("startup")
-async def load_model():
-    global model
-    model = joblib.load('models/fraud_detection_model.joblib')
+def get_review_priority(probability: float) -> str:
+    """
+    Determine review priority based on fraud probability.
+    """
+    if probability >= 0.9:
+        return "HIGH"
+    elif probability >= 0.7:
+        return "MEDIUM"
+    else:
+        return "LOW"
 
 
-@app.post("/predict", response_model=PredictionResponse)
-async def predict_transaction(transaction: Transaction):
+@app.post("/predict", response_model=InferenceResponse)
+async def predict(transaction: TransactionRequest):
+    """
+    Make real-time fraud prediction for a single transaction.
+    """
+    start_time = datetime.now()
+
     try:
-        # Convert transaction to DataFrame
+        # Generate transaction ID
+        transaction_id = f"TXN_{start_time.strftime('%Y%m%d_%H%M%S')}_{transaction.merchant_id}"
+
+        # Create DataFrame for prediction
         df = pd.DataFrame([transaction.dict()])
 
-        # Preprocess features
-        df = model.preprocess_features(df)
+        # Make prediction
+        probability = model.predict(df)[0]
 
-        # Get predictions
-        predictions = model.predict(df)
+        # Determine if review is required
+        OPTIMAL_THRESHOLD = 0.7  # Update based on your analysis
+        requires_review = probability > OPTIMAL_THRESHOLD
 
-        # Get merchant profile from cache
-        merchant_profile = redis_client.get(f"merchant:{transaction.merchant_id}")
-        if merchant_profile:
-            merchant_profile = json.loads(merchant_profile)
-        else:
-            merchant_profile = {"transaction_count": 0, "avg_amount": 0}
+        # Calculate inference time
+        inference_time = (datetime.now() - start_time).total_seconds() * 1000
 
-        # Calculate review priority
-        risk_score = predictions['combined_score'][0]
-
-        if risk_score > 0.8:
-            priority = "HIGH"
-            needs_review = True
-        elif risk_score > 0.6:
-            priority = "MEDIUM"
-            needs_review = True
-        else:
-            priority = "LOW"
-            needs_review = False
-
-        # Update merchant profile
-        merchant_profile["transaction_count"] += 1
-        merchant_profile["avg_amount"] = (
-                (merchant_profile["avg_amount"] * (merchant_profile["transaction_count"] - 1) +
-                 transaction.amount) / merchant_profile["transaction_count"]
+        # Prepare response
+        response = InferenceResponse(
+            transaction_id=transaction_id,
+            fraud_probability=float(probability),
+            requires_review=requires_review,
+            review_priority=get_review_priority(probability),
+            inference_time_ms=inference_time
         )
 
-        # Cache updated profile
-        redis_client.setex(
-            f"merchant:{transaction.merchant_id}",
-            3600,  # 1 hour expiry
-            json.dumps(merchant_profile)
+        # Log inference
+        logger.info(
+            f"Inference completed - ID: {transaction_id}, "
+            f"Probability: {probability:.4f}, "
+            f"Review Required: {requires_review}, "
+            f"Time: {inference_time:.2f}ms"
         )
 
-        return PredictionResponse(
-            transaction_id=str(transaction.merchant_id),
-            risk_score=float(risk_score),
-            review_priority=priority,
-            review_needed=needs_review,
-            supervised_score=float(predictions['supervised_score'][0]),
-            unsupervised_score=float(predictions['unsupervised_score'][0]),
-            prediction_timestamp=datetime.now().isoformat()
-        )
+        return response
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Inference error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")
 
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    """
+    Health check endpoint to verify service status.
+    """
+    return {
+        "status": "healthy",
+        "model_loaded": model is not None,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
