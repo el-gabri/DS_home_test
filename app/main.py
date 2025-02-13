@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, Any
 import joblib
 import pandas as pd
+import numpy as np
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -14,7 +15,7 @@ if not os.path.exists(MODEL_PATH):
 
 model = joblib.load(MODEL_PATH)
 
-# Initialize FastAPI api
+# Initialize FastAPI app
 app = FastAPI(
     title="Fraud Detection API",
     description="API for real-time fraud detection in financial transactions",
@@ -77,11 +78,57 @@ def preprocess_transaction(transaction: Dict[str, Any]) -> pd.DataFrame:
 
     df['amount'] = df['amount'] * 0.1
 
+    # Drop unnecessary columns
+    df = df.drop(['event_created_at', 'merchant_id'], axis=1)
+
+    # %%
+    list_variables_to_drop = ['mc_billpay_br_count_sanction_last_30d',
+     'mc_pep_count_last_2d',
+     'mc_billpay_br_count_pep_br_last_30d',
+     'mc_credit_transfer_in_br_count_pep_br_last_30d',
+     'mc_credit_transfer_out_br_count_pep_br_last_30d',
+     'mc_tx_amount_pend_sum_last_14d',
+     'mc_chip_tx_amount_local_succ_sum_7d']
+
+    df = df.drop(columns=list_variables_to_drop)
+
     # Ensure all required columns are present in the correct order
     # Add any missing columns with default values
     # This should match your training data structure
 
     return df
+
+def treat_missing_values(df:  pd.DataFrame) -> pd.DataFrame:
+    """
+    Comprehensive missing value treatment preserving the signal from null values
+    """
+    # Create a copy to avoid modifying the original dataframe
+    df_treated = df.copy()
+
+    # Store columns to process (excluding target and non-numeric columns)
+    columns_to_process = df.select_dtypes(include=['float64', 'int64']).columns
+    columns_to_process = [col for col in columns_to_process if
+                          not col in ['infraction', 'merchant_id', 'event_created_at']]
+
+    # Forward fill for time-dependent features
+    df_treated['event_created_at'] = pd.to_datetime(df_treated['event_created_at'])
+    df_treated = df_treated.sort_values('event_created_at')
+
+    for column in columns_to_process:
+        if df[column].isnull().any():
+            # Calculate the fraud rate difference for null vs non-null
+            fraud_rate_null = df[df[column].isnull()]['infraction'].mean()
+            fraud_rate_non_null = df[df[column].notnull()]['infraction'].mean()
+            ratio = fraud_rate_null / fraud_rate_non_null if fraud_rate_non_null > 0 else np.inf
+
+            # Choose imputation strategy based on fraud rate ratio
+            if ratio > 10:  # If nulls are much more likely to be fraud
+                # Use a special value (e.g., -999) to preserve the signal
+                df_treated[column] = df_treated[column].fillna(-999999)
+            else:
+                df_treated[column] = df_treated[column].fillna(df_treated[column].median())
+
+    return df_treated
 
 
 @app.post("/predict", response_model=FraudPredictionResponse)
@@ -89,6 +136,8 @@ async def predict_fraud(transaction: Transaction):
     try:
         # Preprocess the transaction
         df = preprocess_transaction(transaction.model_dump())
+
+        df = treat_missing_values(df)
 
         # Make prediction
         fraud_probability = model.predict_proba(df)[0, 1]

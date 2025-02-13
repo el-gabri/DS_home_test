@@ -40,8 +40,8 @@ pip install requirements.txt
 
 3. Run the API:
 ```bash
-cd api
-uvicorn main:api --reload
+cd app
+uvicorn main:app --reload
 ```
 
 The API will be available at http://localhost:8000
@@ -98,10 +98,10 @@ The API is designed for real-time inference, with each prediction taking ~100ms.
 
 1. Build Docker image:
 ```bash
-docker build -t fraud-detection-api .
+docker build -t fraud-detection-app .
 ```
 
 2. Run container:
 ```bash
-docker run -p 8000:8000 fraud-detection-api
+docker run -p 8000:8000 fraud-detection-app
 ```

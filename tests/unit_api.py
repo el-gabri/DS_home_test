@@ -5,9 +5,9 @@ from fastapi.testclient import TestClient
 import sys
 import os
 
-# Ensure the api module is in the path.
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "api"))
-from api.main import app
+# Ensure the app module is in the path.
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
+from app.main import app
 
 client = TestClient(app)
 
