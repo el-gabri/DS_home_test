@@ -1,4 +1,5 @@
 import os
+import uuid
 from datetime import datetime
 from typing import Dict, Any
 
@@ -133,36 +134,72 @@ def treat_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     return df_treated
 
 
-@app.post("/predict", response_model=FraudPredictionResponse)
+@app.post("/api/v1/predict", response_model=FraudPredictionResponse)
 async def predict_fraud(transaction: Transaction):
-    try:
-        # Preprocess the transaction
-        df = preprocess_transaction(transaction.model_dump())
+    """
+    Predict fraud probability for a PIX transaction.
 
-        df = treat_missing_values(df)
+    Args:
+        transaction: Transaction details including amount and merchant information
+
+    Returns:
+        Prediction results including fraud probability and review flag
+    """
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    try:
+        # Preprocess transaction
+        features = preprocess_transaction(transaction)
 
         # Make prediction
-        fraud_probability = model.predict_proba(df)[0, 1]
+        fraud_probability = float(model.predict_proba(features)[0][1])
 
-        # Use 0.7 threshold (based on your model analysis)
-        is_fraudulent = fraud_probability > 0.7
-
-        # Calculate risk score (0-100)
-        risk_score = int(fraud_probability * 100)
+        # Apply threshold (adjust as needed)
+        is_fraud = fraud_probability > 0.7  # Using threshold from your analysis
+        review_required = fraud_probability > 0.5
 
         return FraudPredictionResponse(
-            transaction_id=f"TX_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            fraud_probability=float(fraud_probability),
-            is_fraudulent=bool(is_fraudulent),
-            risk_score=risk_score,
-            timestamp=datetime.now().isoformat(),
-            merchant_id=transaction.merchant_id
+            transaction_id=str(uuid.uuid4()),
+            fraud_probability=fraud_probability,
+            is_fraud=is_fraud,
+            review_required=review_required,
+            timestamp=datetime.utcnow()
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint with API information."""
+    return {
+        "name": "PIX Fraud Detection API",
+        "version": "1.0.0",
+        "description": "API for real-time fraud detection in PIX transactions",
+        "endpoints": {
+            "/": "This information",
+            "/docs": "OpenAPI documentation",
+            "/redoc": "ReDoc documentation",
+            "/health": "Health check",
+            "/api/v1/predict": "Fraud prediction endpoint"
+        }
+    }
+
+
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "model_version": "1.0.0"}
+    """Health check endpoint."""
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat()
+    }
