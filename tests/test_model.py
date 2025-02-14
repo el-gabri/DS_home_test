@@ -1,8 +1,9 @@
 # tests/test_models.py
-import pickle
 import os
+import pickle
 import numpy as np
 import pytest
+
 
 @pytest.fixture(scope="module")
 def load_model():
@@ -10,6 +11,7 @@ def load_model():
     with open(model_path, "rb") as f:
         model = pickle.load(f)
     return model
+
 
 def test_model_prediction_shape(load_model):
     # Create a dummy input (adjust based on your feature count)

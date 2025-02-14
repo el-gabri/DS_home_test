@@ -1,9 +1,10 @@
 import os
 from datetime import datetime
 from typing import Dict, Any
+
 import joblib
-import pandas as pd
 import numpy as np
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
@@ -83,12 +84,12 @@ def preprocess_transaction(transaction: Dict[str, Any]) -> pd.DataFrame:
 
     # %%
     list_variables_to_drop = ['mc_billpay_br_count_sanction_last_30d',
-     'mc_pep_count_last_2d',
-     'mc_billpay_br_count_pep_br_last_30d',
-     'mc_credit_transfer_in_br_count_pep_br_last_30d',
-     'mc_credit_transfer_out_br_count_pep_br_last_30d',
-     'mc_tx_amount_pend_sum_last_14d',
-     'mc_chip_tx_amount_local_succ_sum_7d']
+                              'mc_pep_count_last_2d',
+                              'mc_billpay_br_count_pep_br_last_30d',
+                              'mc_credit_transfer_in_br_count_pep_br_last_30d',
+                              'mc_credit_transfer_out_br_count_pep_br_last_30d',
+                              'mc_tx_amount_pend_sum_last_14d',
+                              'mc_chip_tx_amount_local_succ_sum_7d']
 
     df = df.drop(columns=list_variables_to_drop)
 
@@ -98,7 +99,8 @@ def preprocess_transaction(transaction: Dict[str, Any]) -> pd.DataFrame:
 
     return df
 
-def treat_missing_values(df:  pd.DataFrame) -> pd.DataFrame:
+
+def treat_missing_values(df: pd.DataFrame) -> pd.DataFrame:
     """
     Comprehensive missing value treatment preserving the signal from null values
     """

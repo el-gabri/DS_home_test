@@ -1,9 +1,9 @@
 import json
+import os
+import sys
 import time
 import requests
 from fastapi.testclient import TestClient
-import sys
-import os
 
 # Ensure the app module is in the path.
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
@@ -24,6 +24,7 @@ def test_predict_valid_input():
     assert response.status_code == 200
     json_response = response.json()
     assert "prediction" in json_response
+
 
 def test_api():
     """
