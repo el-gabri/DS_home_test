@@ -156,8 +156,8 @@ async def predict_fraud(transaction: Transaction):
         fraud_probability = float(model.predict_proba(features)[0][1])
 
         # Apply threshold (adjust as needed)
-        is_fraud = fraud_probability > 0.7  # Using threshold from your analysis
-        review_required = fraud_probability > 0.5
+        is_fraud = fraud_probability >  0.7778  # Using threshold from analysis
+        review_required = fraud_probability >  0.7778
 
         return FraudPredictionResponse(
             transaction_id=str(uuid.uuid4()),
