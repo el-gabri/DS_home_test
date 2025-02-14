@@ -1,0 +1,206 @@
+feature_importance:
+  amount: 0.14544266898884348
+  day: 0.0052931795959316845
+  decline_ext_rate_30d: 0.0
+  hour: 0.011804109713435696
+  is_legal_entity: 0.0
+  is_mei: 0.0
+  is_night: 0.0
+  is_person: 0.0
+  is_weekend: 0.0
+  mc_atm_br_tx_out_count_last_15d: 0.004550777067182792
+  mc_atm_br_tx_out_count_last_1y: 0.03491783787230244
+  mc_atm_br_tx_out_count_lifetime: 0.0
+  mc_billpay_br_count_last_15d: 0.007363737348787123
+  mc_billpay_br_count_last_1y: 0.0645791294141539
+  mc_billpay_br_count_lifetime: 0.07400351645456507
+  mc_billpay_br_sum_last_15d: 0.00677901837128237
+  mc_billpay_br_sum_last_1y: 0.048393828934992236
+  mc_chip_tx_amount_decl_ext_sum_30d: 0.0
+  mc_chip_tx_amount_local_decl_ext_sum_15d: 0.0
+  mc_chip_tx_amount_local_succ_sum_15d: 0.015579058810519679
+  mc_chip_tx_amount_succ_sum_30d: 0.0
+  mc_chip_tx_amount_succ_sum_7d: 0.0058721708979252146
+  mc_chip_tx_decl_ext_count_7d: 0.0
+  mc_chip_tx_succ_count_30d: 0.0
+  mc_chip_tx_succ_count_7d: 0.0
+  mc_credit_transfer_in_br_count_last_30d: 0.0
+  mc_credit_transfer_in_br_count_sanction_last_30d: 0.0
+  mc_credit_transfer_in_br_sum_last_120d: 0.0
+  mc_credit_transfer_in_br_sum_last_15d: 0.005185883160713792
+  mc_credit_transfer_in_br_sum_last_180d: 0.03853866861668826
+  mc_credit_transfer_in_br_sum_last_60d: 0.0035841756230895055
+  mc_credit_transfer_in_br_sum_last_90d: 0.0015269356016250537
+  mc_credit_transfer_in_rounded_amounts_br_sum_last_30d: 0.0
+  mc_credit_transfer_out_br_count_last_15d: 0.025613469566408822
+  mc_credit_transfer_out_br_count_last_1y: 0.01143322779739639
+  mc_credit_transfer_out_br_count_lifetime: 0.0
+  mc_credit_transfer_out_br_count_sanction_last_30d: 0.0
+  mc_credit_transfer_out_br_sum_last_15d: 0.03266516052790847
+  mc_credit_transfer_out_br_sum_last_1y: 0.005530907976484746
+  mc_credit_transfer_out_br_sum_last_30d: 0.0
+  mc_credit_transfer_out_rounded_amounts_br_count_last_30d: 0.0
+  mc_credit_transfer_out_rounded_amounts_br_sum_last_30d: 0.0
+  mc_merchants_ip_count_dist_shared_last_15d: 0.0
+  mc_pur_br_count_last_15d: 0.0
+  mc_pur_br_count_last_1y: 0.0
+  mc_pur_br_count_lifetime: 0.0
+  mc_pur_br_sum_last_15d: 0.0
+  mc_pur_br_sum_last_1y: 0.011679536068406084
+  mc_sanction_count_last_2d: 0.0
+  mc_tx_amount_decl_ext_sum_last_14d: 0.0
+  mc_tx_amount_decl_ext_sum_last_24h: 0.007310505455533442
+  mc_tx_amount_decl_ext_sum_last_60m: 0.006429498810968104
+  mc_tx_amount_decl_ext_sum_lifetime: 0.010193962552959982
+  mc_tx_amount_decl_int_sum_lifetime: 0.01554653275539696
+  mc_tx_amount_fail_sum_last_14d: 0.006486309306724826
+  mc_tx_amount_fail_sum_last_60m: 0.01690564610800074
+  mc_tx_amount_fail_sum_lifetime: 0.003461892116791658
+  mc_tx_amount_pend_sum_last_2d: 0.0
+  mc_tx_amount_succ_sum_last_14d: 0.0
+  mc_tx_amount_succ_sum_last_24h: 0.0
+  mc_tx_amount_succ_sum_last_2d: 0.0
+  mc_tx_amount_succ_sum_last_30d: 0.0
+  mc_tx_amount_succ_sum_last_60m: 0.0
+  mc_tx_amount_succ_sum_last_90d: 0.0032735625257317713
+  mc_tx_amount_succ_sum_lifetime: 0.0038104763734430674
+  mc_tx_amount_sum_last_14d: 0.0
+  mc_tx_amount_sum_last_24h: 0.0
+  mc_tx_amount_sum_last_2d: 0.0
+  mc_tx_amount_sum_last_60m: 0.0
+  mc_tx_amount_sum_lifetime: 0.007247554337647678
+  mc_tx_count_decl_ext_last_30d: 0.0
+  mc_tx_cp_count_decl_ext_last_24h: 0.0052914710664062675
+  mc_tx_cp_count_decl_ext_last_30d: 0.003957668441926587
+  mc_tx_cp_dbt_sum_sq_decl_ext_last_30d: 0.006111408861845346
+  mc_tx_cp_dbt_sum_sq_fail_last_14d: 0.0
+  mc_tx_cp_dbt_sum_sq_fail_last_24h: 0.0
+  mc_tx_cp_mean_decl_ext_last_31d_mw: 0.0
+  mc_tx_cp_sum_decl_ext_last_24h: 0.0023479953764492085
+  mc_tx_cp_sum_decl_ext_last_30d: 0.0
+  mc_tx_succ_count_last_14d: 0.014812191081202259
+  mc_tx_succ_count_last_24h: 0.0
+  mc_tx_succ_count_last_2d: 0.0
+  mc_tx_succ_count_last_30d: 0.0
+  mc_tx_succ_count_last_365d: 0.0
+  mc_tx_succ_count_last_60m: 0.0
+  mc_tx_succ_count_lifetime: 0.19845121906672794
+  mc_weeks_signup: 0.10616442921878134
+  mcc_count_succ_1y: 0.0
+  mcc_sum_sq_succ_1y: 0.002743763095458901
+  mcc_sum_sq_succ_30d: 0.011680665824034962
+  mcc_sum_succ_1y: 0.004924373365646686
+  mcc_sum_succ_30d: 0.0025118758496794347
+  month: 0.0
+feature_names:
+- amount
+- mc_weeks_signup
+- mc_atm_br_tx_out_count_lifetime
+- mc_credit_transfer_out_br_sum_last_30d
+- mc_billpay_br_sum_last_15d
+- mc_billpay_br_count_last_1y
+- mc_credit_transfer_out_br_sum_last_1y
+- mc_pur_br_count_last_1y
+- mc_billpay_br_count_last_15d
+- mc_atm_br_tx_out_count_last_1y
+- mc_sanction_count_last_2d
+- mc_credit_transfer_in_rounded_amounts_br_sum_last_30d
+- mc_pur_br_sum_last_15d
+- mc_credit_transfer_in_br_sum_last_180d
+- mc_credit_transfer_out_br_count_lifetime
+- mc_credit_transfer_out_br_count_sanction_last_30d
+- mc_credit_transfer_out_br_count_last_15d
+- mc_pur_br_count_last_15d
+- mc_credit_transfer_in_br_sum_last_120d
+- mc_pur_br_count_lifetime
+- mc_credit_transfer_in_br_count_last_30d
+- mc_credit_transfer_in_br_sum_last_90d
+- mc_credit_transfer_out_br_count_last_1y
+- mc_billpay_br_sum_last_1y
+- mc_credit_transfer_out_rounded_amounts_br_sum_last_30d
+- mc_credit_transfer_out_br_sum_last_15d
+- mc_credit_transfer_in_br_count_sanction_last_30d
+- mc_credit_transfer_in_br_sum_last_15d
+- mc_billpay_br_count_lifetime
+- mc_atm_br_tx_out_count_last_15d
+- mc_credit_transfer_out_rounded_amounts_br_count_last_30d
+- mc_credit_transfer_in_br_sum_last_60d
+- mc_pur_br_sum_last_1y
+- mc_chip_tx_succ_count_30d
+- mc_chip_tx_decl_ext_count_7d
+- mc_chip_tx_amount_local_decl_ext_sum_15d
+- mc_chip_tx_amount_succ_sum_7d
+- mc_chip_tx_amount_local_succ_sum_15d
+- mc_chip_tx_amount_decl_ext_sum_30d
+- mc_chip_tx_amount_succ_sum_30d
+- mc_chip_tx_succ_count_7d
+- decline_ext_rate_30d
+- mc_tx_cp_mean_decl_ext_last_31d_mw
+- mc_tx_amount_sum_last_60m
+- mc_tx_amount_decl_ext_sum_lifetime
+- mc_tx_amount_succ_sum_last_30d
+- mc_tx_succ_count_last_24h
+- mc_tx_amount_succ_sum_last_14d
+- mc_tx_amount_fail_sum_last_60m
+- mc_tx_amount_succ_sum_last_60m
+- mc_tx_amount_succ_sum_last_2d
+- mc_tx_amount_succ_sum_last_90d
+- mc_tx_amount_fail_sum_last_14d
+- mc_tx_amount_succ_sum_lifetime
+- mc_tx_amount_pend_sum_last_2d
+- mc_tx_amount_decl_int_sum_lifetime
+- mc_tx_amount_sum_last_24h
+- mc_tx_amount_sum_lifetime
+- mc_tx_succ_count_last_14d
+- mc_tx_succ_count_lifetime
+- mc_tx_amount_succ_sum_last_24h
+- mc_tx_amount_decl_ext_sum_last_14d
+- mc_tx_amount_decl_ext_sum_last_24h
+- mc_tx_amount_decl_ext_sum_last_60m
+- mc_tx_succ_count_last_2d
+- mc_tx_amount_fail_sum_lifetime
+- mc_tx_succ_count_last_30d
+- mc_tx_amount_sum_last_2d
+- mc_tx_succ_count_last_365d
+- mc_tx_succ_count_last_60m
+- mc_tx_amount_sum_last_14d
+- mc_tx_cp_sum_decl_ext_last_24h
+- mc_tx_cp_dbt_sum_sq_decl_ext_last_30d
+- mc_tx_count_decl_ext_last_30d
+- mc_tx_cp_sum_decl_ext_last_30d
+- mc_tx_cp_count_decl_ext_last_24h
+- mc_tx_cp_dbt_sum_sq_fail_last_24h
+- mc_tx_cp_count_decl_ext_last_30d
+- mc_tx_cp_dbt_sum_sq_fail_last_14d
+- mc_merchants_ip_count_dist_shared_last_15d
+- mcc_sum_succ_1y
+- mcc_sum_sq_succ_30d
+- mcc_count_succ_1y
+- mcc_sum_sq_succ_1y
+- mcc_sum_succ_30d
+- is_legal_entity
+- is_mei
+- is_person
+- is_weekend
+- is_night
+- month
+- day
+- hour
+model_parameters:
+  algorithm: deprecated
+  estimator: null
+  learning_rate: 0.25
+  n_estimators: 500
+  random_state: null
+model_type: XGBoost
+performance_metrics:
+  Avg Precision: 0.49224109416801926
+  F1-Score: 0.33010697911360165
+  Precision: 0.20109651391331335
+  Precision@100: 0.88
+  ROC_AUC: 0.9784163318497308
+  Recall: 0.9208905731880626
+preprocessing:
+  random_state: null
+  sampling_strategy: 0.25
+timestamp: '20250214_153820'
