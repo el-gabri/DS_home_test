@@ -26,19 +26,21 @@ fraud-detection/
 ```
 
 ## Setup Instructions
+1. Clone repository
 
-1. Create a virtual environment:
+``` bash
+git clone https://github.com/el-gabri/DS_home_test.git
+```
+2. Create a virtual environment:
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
-
-2. Install dependencies:
+3. Install dependencies:
 ```bash
 pip install requirements.txt
 ```
-
-3. Run the API:
+4. Run the API:
 ```bash
 cd app
 uvicorn main:app --reload

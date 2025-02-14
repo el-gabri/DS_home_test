@@ -8,7 +8,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 # Load the trained model
-MODEL_PATH = "../models/supervised/xgboost_model_20250212_144931.pkl"
+MODEL_PATH = "../model/supervised/xgboost_model_20250212_144931.pkl"
 
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model file not found at path: {MODEL_PATH}")
