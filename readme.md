@@ -88,11 +88,11 @@ pytest tests/
 
 The system uses an XGBoost classifier trained on historical transaction data. Key features:
 
-- Probability threshold: 0.7 (optimized for recall)
+- Probability threshold: 0.7778 (optimized for cost)
 - Performance metrics:
-  - Recall: ~0.75
-  - Precision@100: ~0.80
-  - ROC AUC: ~0.95
+  - Recall: ~0.94
+  - F1-score: ~0.44
+  - Monthly Cost: ~$24k
 
 ## Deployment
 
