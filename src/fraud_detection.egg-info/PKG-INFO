@@ -1,0 +1,29 @@
+Metadata-Version: 2.4
+Name: fraud-detection
+Version: 0.1.0
+Summary: Real-time fraud detection for PIX transactions
+Requires-Python: >=3.11
+Requires-Dist: fastapi~=0.115.8
+Requires-Dist: uvicorn~=0.34.0
+Requires-Dist: pydantic~=2.10.6
+Requires-Dist: pydantic-settings~=2.7.1
+Requires-Dist: joblib~=1.4.2
+Requires-Dist: pandas~=2.2.3
+Requires-Dist: numpy~=2.1.3
+Requires-Dist: scikit-learn~=1.6.1
+Requires-Dist: xgboost~=2.1.4
+Requires-Dist: imbalanced-learn~=0.13.0
+Requires-Dist: PyYAML~=6.0.2
+Provides-Extra: dev
+Requires-Dist: scipy~=1.15.1; extra == "dev"
+Requires-Dist: lightgbm~=4.5.0; extra == "dev"
+Requires-Dist: pyod~=2.0.3; extra == "dev"
+Requires-Dist: matplotlib~=3.10.0; extra == "dev"
+Requires-Dist: seaborn~=0.13.2; extra == "dev"
+Requires-Dist: optuna~=4.2.0; extra == "dev"
+Requires-Dist: plotly~=6.0.0; extra == "dev"
+Requires-Dist: statsmodels~=0.14.4; extra == "dev"
+Requires-Dist: pytest~=8.3.4; extra == "dev"
+Requires-Dist: httpx~=0.28.1; extra == "dev"
+Requires-Dist: ruff~=0.9.4; extra == "dev"
+Requires-Dist: mypy~=1.14.1; extra == "dev"

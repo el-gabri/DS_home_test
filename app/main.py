@@ -1,180 +1,144 @@
-import os
+"""Real-time PIX fraud scoring API.
+
+Rewritten end-to-end; the previous version could not serve a single
+successful request (see plan.md 2.2 for the full list: it treated the
+Pydantic model as a dict, dropped columns that don't exist on the request
+schema, expected ~94 model features from a 10-field request body, and
+returned a response that didn't match its own ``response_model``). The fixes
+here are structural, not patches:
+
+* Preprocessing (temporal features, null handling) lives in
+  ``fraud_detection`` and is shared with training — no second copy.
+* The ~90 merchant aggregate features a caller cannot supply are resolved
+  from ``FeatureStore`` (``app/feature_store.py``), keyed by merchant_id.
+* The model artifact is a self-describing ``ModelArtifact`` (feature order +
+  threshold + pipeline together), loaded once at startup via ``lifespan``.
+* The response model and the returned object are the same shape, checked by
+  FastAPI's own validation instead of by hand.
+"""
+
+import logging
 import uuid
-from datetime import datetime
-from typing import Dict, Any
-import joblib
-import numpy as np
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
+from typing import Dict
+
 import pandas as pd
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
-# Load the trained model
-MODEL_PATH = "../model/supervised/xgboost_model_20250212_144931.pkl"
-#MODEL_PATH = "../model/supervised/ADA_model_unshuffled20250214_153820.pkl"
+from fraud_detection.config import settings
+from fraud_detection.features import add_temporal_features
+from fraud_detection.registry import ModelArtifact, load_artifact
+from fraud_detection.schema import TIMESTAMP_COL
 
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"Model file not found at path: {MODEL_PATH}")
+from app.feature_store import CsvFeatureStore, FeatureStore
 
-model = joblib.load(MODEL_PATH)
+logger = logging.getLogger("fraud_detection.api")
 
-# Initialize FastAPI app
+state: Dict[str, object] = {"artifact": None, "feature_store": None}
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        state["artifact"] = load_artifact(settings.model_path)
+    except FileNotFoundError:
+        logger.error("Model artifact not found at %s; /predict will return 503.", settings.model_path)
+        state["artifact"] = None
+
+    state["feature_store"] = CsvFeatureStore(settings.feature_store_path)
+    yield
+    state.clear()
+
+
 app = FastAPI(
     title="Fraud Detection API",
-    description="API for real-time fraud detection in financial transactions",
-    version="1.0.0"
+    description="Real-time fraud scoring for PIX transactions received by SumUp merchant accounts",
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
 
 class Transaction(BaseModel):
-    amount: float = Field(..., gt=0, description="Transaction amount in local currency")
-    merchant_id: str = Field(..., description="Unique identifier for the merchant")
-    is_person: bool = Field(..., description="Whether the merchant is an individual")
-    is_legal_entity: bool = Field(..., description="Whether the merchant is a legal entity")
-    is_mei: bool = Field(..., description="Whether the merchant is a MEI")
-    mc_billpay_br_sum_last_15d: float = Field(0.0, description="Sum of bill payments in last 15 days")
-    mc_billpay_br_count_last_1y: int = Field(0, description="Count of bill payments in last year")
-    mc_pur_br_sum_last_15d: float = Field(0.0, description="Sum of purchases in last 15 days")
-    mc_billpay_br_sum_last_1y: float = Field(0.0, description="Sum of bill payments in last year")
-    mc_pur_br_sum_last_1y: float = Field(0.0, description="Sum of purchases in last year")
-
-    # Add other required fields based on model's features
-
-    class Config:
-        schema_extra = {
-            # "example": {
-            #     "amount": 1000.00,
-            #     "merchant_id": "MERCH123",
-            #     "is_person": True,
-            #     "is_legal_entity": False,
-            #     "is_mei": False,
-            #     "mc_billpay_br_sum_last_15d": 500.0,
-            #     "mc_billpay_br_count_last_1y": 12,
-            #     "mc_pur_br_sum_last_15d": 300.0,
-            #     "mc_billpay_br_sum_last_1y": 5000.0,
-            #     "mc_pur_br_sum_last_1y": 3000.0
-            # }
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "merchant_id": "MERCH123",
+                "amount": 1000.00,
+                "event_created_at": "2026-07-22T14:30:00Z",
+            }
         }
+    )
+
+    merchant_id: str = Field(..., description="Unique identifier for the merchant (merchant_code)")
+    amount: float = Field(..., gt=0, description="Transaction amount in local currency")
+    event_created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="When the PIX was received; defaults to now for real-time scoring",
+    )
 
 
 class FraudPredictionResponse(BaseModel):
     transaction_id: str
-    fraud_probability: float
-    is_fraudulent: bool
-    risk_score: int
-    timestamp: str
     merchant_id: str
+    fraud_probability: float
+    review_required: bool
+    threshold: float
+    model_version: str
+    timestamp: str
 
 
-def preprocess_transaction(transaction: Dict[str, Any]) -> pd.DataFrame:
-    """Preprocess a single transaction for model inference."""
-    # Create a single-row DataFrame
-    df = pd.DataFrame([transaction])
-
-    # Add derived temporal features
-    now = datetime.now()
-    df['is_weekend'] = 1 if now.weekday() >= 5 else 0
-    df['is_night'] = 1 if (now.hour < 6 or now.hour >= 18) else 0
-    df['month'] = now.month
-    df['day'] = now.day
-    df['hour'] = now.hour
-
-    df['amount'] = df['amount'] * 0.1
-
-    # Drop unnecessary columns
-    df = df.drop(['event_created_at', 'merchant_id'], axis=1)
-
-    # %%
-    list_variables_to_drop = ['mc_billpay_br_count_sanction_last_30d',
-                              'mc_pep_count_last_2d',
-                              'mc_billpay_br_count_pep_br_last_30d',
-                              'mc_credit_transfer_in_br_count_pep_br_last_30d',
-                              'mc_credit_transfer_out_br_count_pep_br_last_30d',
-                              'mc_tx_amount_pend_sum_last_14d',
-                              'mc_chip_tx_amount_local_succ_sum_7d']
-
-    df = df.drop(columns=list_variables_to_drop)
-
-    # Ensure all required columns are present in the correct order
-    # Add any missing columns with default values
-    # This should match your training data structure
-
-    return df
+def _get_artifact() -> ModelArtifact:
+    artifact = state.get("artifact")
+    if artifact is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+    return artifact
 
 
-def treat_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+def _get_feature_store() -> FeatureStore:
+    return state["feature_store"]
+
+
+def build_feature_row(transaction: Transaction, feature_store: FeatureStore) -> pd.DataFrame:
+    """Assemble the single-row feature frame the model expects.
+
+    Merges what the caller sent (amount, timestamp) with what only the
+    feature store knows (merchant profile + rolling aggregates), then derives
+    the same temporal features used at training time from the transaction's
+    own timestamp — never the server's wall clock.
     """
-    Comprehensive missing value treatment preserving the signal from null values
-    """
-    # Create a copy to avoid modifying the original dataframe
-    df_treated = df.copy()
-
-    # Store columns to process (excluding target and non-numeric columns)
-    columns_to_process = df.select_dtypes(include=['float64', 'int64']).columns
-    columns_to_process = [col for col in columns_to_process if
-                          not col in ['infraction', 'merchant_id', 'event_created_at']]
-
-    # Forward fill for time-dependent features
-    df_treated['event_created_at'] = pd.to_datetime(df_treated['event_created_at'])
-    df_treated = df_treated.sort_values('event_created_at')
-
-    for column in columns_to_process:
-        if df[column].isnull().any():
-            # Calculate the fraud rate difference for null vs non-null
-            fraud_rate_null = df[df[column].isnull()]['infraction'].mean()
-            fraud_rate_non_null = df[df[column].notnull()]['infraction'].mean()
-            ratio = fraud_rate_null / fraud_rate_non_null if fraud_rate_non_null > 0 else np.inf
-
-            # Choose imputation strategy based on fraud rate ratio
-            if ratio > 10:  # If nulls are much more likely to be fraud
-                # Use a special value (e.g., -999) to preserve the signal
-                df_treated[column] = df_treated[column].fillna(-999999)
-            else:
-                df_treated[column] = df_treated[column].fillna(df_treated[column].median())
-
-    return df_treated
+    row = {
+        "amount": transaction.amount,
+        TIMESTAMP_COL: transaction.event_created_at,
+        **feature_store.get_merchant_features(transaction.merchant_id),
+    }
+    df = pd.DataFrame([row])
+    return add_temporal_features(df, timestamp_col=TIMESTAMP_COL)
 
 
 @app.post("/api/v1/predict", response_model=FraudPredictionResponse)
-async def predict_fraud(transaction: Transaction):
-    """
-    Predict fraud probability for a PIX transaction.
-
-    Args:
-        transaction: Transaction details including amount and merchant information
-
-    Returns:
-        Prediction results including fraud probability and review flag
-    """
-    if model is None:
-        raise HTTPException(status_code=503, detail="Model not loaded")
+async def predict_fraud(transaction: Transaction) -> FraudPredictionResponse:
+    """Score a single PIX transaction for fraud risk."""
+    artifact = _get_artifact()
+    feature_store = _get_feature_store()
 
     try:
-        # Preprocess transaction
-        features = preprocess_transaction(transaction)
+        features = build_feature_row(transaction, feature_store)
+        fraud_probability = float(artifact.predict_proba(features)[0])
+    except Exception:
+        logger.exception("Prediction failed for merchant_id=%s", transaction.merchant_id)
+        raise HTTPException(status_code=500, detail="Prediction failed") from None
 
-        # Make prediction
-        fraud_probability = float(model.predict_proba(features)[0][1])
-
-        # Apply threshold (adjust as needed)
-        is_fraud = fraud_probability >  0.7778  # Using threshold from analysis
-        review_required = fraud_probability >  0.7778
-
-        return FraudPredictionResponse(
-            transaction_id=str(uuid.uuid4()),
-            fraud_probability=fraud_probability,
-            is_fraud=is_fraud,
-            review_required=review_required,
-            timestamp=datetime.utcnow()
-        )
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    return FraudPredictionResponse(
+        transaction_id=str(uuid.uuid4()),
+        merchant_id=transaction.merchant_id,
+        fraud_probability=fraud_probability,
+        review_required=fraud_probability > artifact.threshold,
+        threshold=artifact.threshold,
+        model_version=artifact.metadata.get("trained_at", "unknown"),
+        timestamp=datetime.now(timezone.utc).isoformat(),
+    )
 
 
 @app.get("/")
@@ -182,24 +146,26 @@ async def root():
     """Root endpoint with API information."""
     return {
         "name": "PIX Fraud Detection API",
-        "version": "1.0.0",
-        "description": "API for real-time fraud detection in PIX transactions",
+        "version": app.version,
         "endpoints": {
             "/": "This information",
             "/docs": "OpenAPI documentation",
             "/redoc": "ReDoc documentation",
             "/health": "Health check",
-            "/api/v1/predict": "Fraud prediction endpoint"
-        }
+            "/api/v1/predict": "Fraud prediction endpoint",
+        },
     }
 
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    if model is None:
+    if state.get("artifact") is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
-    return {
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    }
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

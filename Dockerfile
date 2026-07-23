@@ -1,26 +1,24 @@
-# Use Python 3.9 slim image
-FROM python:3.9-slim
+# Python 3.9 cannot satisfy numpy~=2.1 (requires >=3.10); 3.12-slim matches
+# the versions pinned in pyproject.toml.
+FROM python:3.12-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
-COPY /requirements.txt .
+# Install only serving dependencies; training-only deps (optuna, jupyter,
+# statsmodels, plotly...) don't belong in the runtime image.
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Application code, the shared fraud_detection package, and the model
+# artifacts actually needed at serving time.
+COPY app/ ./app
+COPY src/ ./src
+COPY model/ ./model
 
-# Copy the rest of the application
-COPY / model
-COPY / data
-COPY / tests
+ENV PYTHONPATH=/app/src
+ENV FRAUD_API_MODEL_PATH=/app/model/supervised/model_latest.pkl
+ENV FRAUD_API_FEATURE_STORE_PATH=/app/model/supervised/merchant_features.csv
 
-# Set environment variables
-ENV PYTHONPATH=/
-ENV MODEL_PATH=/models/supervised/xgboost_model_20250212_144931.pkl
-
-# Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

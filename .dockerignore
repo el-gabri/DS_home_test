@@ -1,0 +1,13 @@
+.git
+.idea
+.venv*
+__pycache__
+*.pyc
+notebooks
+tests
+*.ipynb_checkpoints
+DS - home test.pdf
+plan.md
+model/supervised/*.pkl
+model/supervised/*.png
+!model/supervised/model_latest.pkl

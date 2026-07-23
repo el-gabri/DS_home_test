@@ -1,102 +1,85 @@
-from datetime import datetime
-from typing import Tuple, Dict, Any
+"""Thin, backward-compatible training wrapper.
 
-import joblib
+This used to contain its own copy of the preprocessing/sampling/model logic,
+which is how it ended up instantiating an ``xgb.XGBRegressor`` and then
+calling the classifier-only ``predict_proba`` on it (a guaranteed crash — see
+plan.md 2.1). It now delegates everything to ``fraud_detection.pipeline`` and
+``fraud_detection.registry`` so there is exactly one implementation of the
+model, shared with ``fraud_detection.train`` and the serving API.
+"""
+
+from typing import Any, Dict, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-import xgboost as xgb
-from imblearn.under_sampling import RandomUnderSampler
+
+from fraud_detection.pipeline import build_pipeline
+from fraud_detection.registry import ModelArtifact, load_artifact, save_artifact
+from fraud_detection.schema import NON_FEATURE_COLS, TARGET_COL
 
 
 class FraudDetectionModel:
-    """
-    Fraud Detection model wrapper class that handles preprocessing,
-    training, and prediction.
-    """
+    """Fraud detection model wrapper: preprocessing, training, prediction."""
 
-    def __init__(self, model_params: Dict[str, Any] = None):
-        self.model = None
-        self.model_params = model_params or {
-            'learning_rate': 0.01,
-            'max_depth': 5,
-            'n_estimators': 100
-        }
+    def __init__(self, model_params: Optional[Dict[str, Any]] = None, random_state: int = 42):
+        self.model_params = model_params
+        self.random_state = random_state
+        self.pipeline = build_pipeline(model_params=model_params, random_state=random_state)
         self.feature_columns = None
+        self._fitted = False
 
-    def preprocess_features(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
-        """
-        Preprocess features for model training or inference.
-        """
-        # Remove unnecessary columns
-        X = df.drop(['infraction', 'event_created_at', 'merchant_id'], axis=1)
-        y = df['infraction'] if 'infraction' in df.columns else None
+    def preprocess_features(self, df: pd.DataFrame) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
+        """Split a raw dataframe into model features X and label y (if present)."""
+        X = df.drop(columns=[c for c in NON_FEATURE_COLS if c in df.columns])
+        y = df[TARGET_COL] if TARGET_COL in df.columns else None
 
-        # Store feature columns for inference
         if self.feature_columns is None:
             self.feature_columns = X.columns.tolist()
 
         return X, y
 
     def train(self, df: pd.DataFrame) -> None:
-        """
-        Train the model with undersampling.
-        """
-        # Preprocess data
+        """Fit the pipeline. Undersampling happens inside the pipeline (train-time
+        only), not as a manual step against the whole dataframe, so it can never
+        leak into evaluation or serving."""
         X, y = self.preprocess_features(df)
+        if y is None:
+            raise ValueError(f"Training data must include the '{TARGET_COL}' column.")
 
-        # Apply undersampling
-        rus = RandomUnderSampler(sampling_strategy=0.25)
-        X_resampled, y_resampled = rus.fit_resample(X, y)
-
-        # Initialize and train model
-        self.model = xgb.XGBRegressor(**self.model_params)
-        self.model.fit(X_resampled, y_resampled)
+        self.pipeline.fit(X, y)
+        self._fitted = True
 
     def predict(self, df: pd.DataFrame) -> np.ndarray:
-        """
-        Make predictions on new data.
-        """
-        if self.model is None:
+        """Fraud probability for each row of ``df``."""
+        if not self._fitted:
             raise ValueError("Model not trained. Call train() first.")
 
-        # Preprocess features
         X, _ = self.preprocess_features(df)
 
-        # Ensure all expected features are present
         missing_features = set(self.feature_columns) - set(X.columns)
         if missing_features:
             raise ValueError(f"Missing features: {missing_features}")
 
-        # Align features with training order
         X = X[self.feature_columns]
+        return self.pipeline.predict_proba(X)[:, 1]
 
-        return self.model.predict_proba(X)[:, 1]
-
-    def save(self, filepath: str) -> None:
-        """
-        Save model to disk.
-        """
-        if self.model is None:
+    def save(self, output_dir: str, threshold: float = 0.5) -> str:
+        if not self._fitted:
             raise ValueError("No model to save. Train the model first.")
 
-        model_data = {
-            'model': self.model,
-            'feature_columns': self.feature_columns,
-            'model_params': self.model_params,
-            'timestamp': datetime.now().isoformat()
-        }
-        joblib.dump(model_data, filepath)
+        artifact = ModelArtifact(
+            pipeline=self.pipeline,
+            feature_names=self.feature_columns,
+            threshold=threshold,
+        )
+        return save_artifact(artifact, output_dir)
 
     @classmethod
-    def load(cls, filepath: str) -> 'FraudDetectionModel':
-        """
-        Load model from disk.
-        """
-        model_data = joblib.load(filepath)
+    def load(cls, filepath: str) -> "FraudDetectionModel":
+        artifact = load_artifact(filepath)
 
         instance = cls()
-        instance.model = model_data['model']
-        instance.feature_columns = model_data['feature_columns']
-        instance.model_params = model_data['model_params']
-
+        instance.pipeline = artifact.pipeline
+        instance.feature_columns = artifact.feature_names
+        instance._fitted = True
         return instance

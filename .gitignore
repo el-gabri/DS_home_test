@@ -3,3 +3,4 @@ data/raw/sumup_case.parquet
 /.idea/aws.xml
 /data/processed/raw_transactions.csv
 /data/processed/df_treated.csv
+plan.md

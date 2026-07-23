@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SumUp.iml" filepath="$PROJECT_DIR$/.idea/SumUp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/fraud-detection.iml" filepath="$PROJECT_DIR$/.idea/fraud-detection.iml" />
     </modules>
   </component>
 </project>
