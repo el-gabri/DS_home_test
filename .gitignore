@@ -1,6 +1,19 @@
-data/raw/sumup_case.parquet
+# Raw/processed data: large, sensitive, and reproducible from the source
+# parquet — never committed.
+data/raw/
+data/processed/
+sumup_case.parquet
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv*/
+
+# Feature-store demo fixture regenerated from data/raw/ (see app/feature_store.py);
+# large and reproducible, so it isn't committed. In production this is a live
+# feature-store query, not a file at all.
+model/supervised/merchant_features.csv
+
 .DS_Store
 /.idea/aws.xml
-/data/processed/raw_transactions.csv
-/data/processed/df_treated.csv
-plan.md

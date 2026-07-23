@@ -1,6 +1,6 @@
 """Merchant feature lookup for real-time inference.
 
-A PIX-received event only carries ``merchant_code``, ``amount`` and
+A PIX-received event only carries ``merchant_id``, ``amount`` and
 ``event_created_at`` — it cannot carry the ~90 rolling-window aggregates
 (``mc_*``/``mcc_*``) the model was trained on, because those are properties
 of the merchant's history, not of this one transaction. In production this
@@ -18,7 +18,6 @@ the same code path as a genuinely missing value during training.
 """
 
 import os
-from typing import Dict, Optional
 
 import numpy as np
 import pandas as pd
@@ -29,21 +28,21 @@ from fraud_detection.schema import MERCHANT_ID_COL, MERCHANT_PROFILE_COLS
 class FeatureStore:
     """Interface every feature store implementation must satisfy."""
 
-    def get_merchant_features(self, merchant_id: str) -> Dict[str, float]:
+    def get_merchant_features(self, merchant_id: str) -> dict[str, float]:
         raise NotImplementedError
 
 
 class CsvFeatureStore(FeatureStore):
-    """In-memory feature store backed by a CSV keyed by ``merchant_code``."""
+    """In-memory feature store backed by a CSV keyed by ``merchant_id``."""
 
-    def __init__(self, path: Optional[str] = None):
-        self._table: Optional[pd.DataFrame] = None
+    def __init__(self, path: str | None = None):
+        self._table: pd.DataFrame | None = None
         if path and os.path.exists(path):
             table = pd.read_csv(path)
             table[MERCHANT_ID_COL] = table[MERCHANT_ID_COL].astype(str)
             self._table = table.set_index(MERCHANT_ID_COL)
 
-    def get_merchant_features(self, merchant_id: str) -> Dict[str, float]:
+    def get_merchant_features(self, merchant_id: str) -> dict[str, float]:
         if self._table is not None and merchant_id in self._table.index:
             row = self._table.loc[merchant_id]
             return {col: row[col] for col in MERCHANT_PROFILE_COLS if col in row}

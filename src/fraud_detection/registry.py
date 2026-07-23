@@ -12,8 +12,8 @@ pipeline object itself rather than typed by hand, so the two cannot diverge.
 
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 import joblib
 import yaml
@@ -23,9 +23,9 @@ from imblearn.pipeline import Pipeline
 @dataclass
 class ModelArtifact:
     pipeline: Pipeline
-    feature_names: List[str]
+    feature_names: list[str]
     threshold: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def predict_proba(self, X) -> Any:
         return self.pipeline.predict_proba(X[self.feature_names])[:, 1]
@@ -38,14 +38,14 @@ class ModelArtifact:
 def save_artifact(
     artifact: ModelArtifact,
     output_dir: str,
-    version: Optional[str] = None,
+    version: str | None = None,
 ) -> str:
     """Persist a ``ModelArtifact`` as a single pickle plus a readable YAML card.
 
     Returns the path to the saved pickle.
     """
     os.makedirs(output_dir, exist_ok=True)
-    version = version or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    version = version or datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
     model_path = os.path.join(output_dir, f"model_{version}.pkl")
     joblib.dump(artifact, model_path)

@@ -12,7 +12,6 @@ train/test split (and thus a fresh model) every time it was called.
 """
 
 from dataclasses import dataclass
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -65,7 +64,7 @@ def business_cost_curve(
 
     y_true = np.asarray(y_true)
     amount = np.asarray(amount)
-    rows: List[dict] = []
+    rows: list[dict] = []
 
     for threshold in np.linspace(0, 1, n_thresholds):
         predictions = (y_proba > threshold).astype(int)

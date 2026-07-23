@@ -6,7 +6,7 @@ inference because ``imblearn.Pipeline`` skips samplers in ``predict*``) ->
 classify. There is no second copy of this logic anywhere else.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from imblearn.pipeline import Pipeline
 from imblearn.under_sampling import RandomUnderSampler
@@ -14,7 +14,7 @@ from xgboost import XGBClassifier
 
 from fraud_detection.preprocessing import NullSignalImputer
 
-DEFAULT_MODEL_PARAMS: Dict[str, Any] = {
+DEFAULT_MODEL_PARAMS: dict[str, Any] = {
     "learning_rate": 0.1,
     "max_depth": 10,
     "n_estimators": 300,
@@ -27,7 +27,7 @@ DEFAULT_RANDOM_STATE = 42
 
 
 def build_pipeline(
-    model_params: Optional[Dict[str, Any]] = None,
+    model_params: dict[str, Any] | None = None,
     sampling_strategy: float = DEFAULT_SAMPLING_STRATEGY,
     random_state: int = DEFAULT_RANDOM_STATE,
 ) -> Pipeline:

@@ -18,9 +18,8 @@ def caract_df(df: pd.DataFrame):
     print('Nº linhas duplicadas: {}'.format(df.duplicated().sum()))
     print('\nNº de vazios*:')
     for col in df.columns:
-        # n_na = pd.isna(df[col]).sum()
         n_na = df[col].isnull().sum()
-        if n_na > 1:
+        if n_na > 0:
             print('\t{}: {} - {}%'.format(col,
                                           n_na,
                                           round(100 * n_na / df.shape[0], 2)))
@@ -52,11 +51,6 @@ def barplot(serie: pd.Series, c='Green'):
     :param c: Cor do gráfico.
     :return: None.
     """
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
     # Contabilizando Na's: substitui NaN por 'Faltante'
     serie = serie.replace(np.nan, 'Faltante', regex=True).copy()
 
@@ -228,19 +222,17 @@ def time_plot(serie: pd.Series, c='Green', stats=True):
     return
 
 
-def iqr(serie: pd.Series, multiplicador=1.5):
+def remove_outliers_zscore(serie: pd.Series, multiplicador=1.5):
     """
-    Análise de outliers da série numérica
+    Análise de outliers da série numérica via desvio em relação à média
+    (mean ± multiplicador * desvio padrão). Note que isso NÃO é o método do
+    intervalo interquartil (IQR) apesar do nome antigo desta função sugerir —
+    para IQR de verdade, use quantis (q1, q3) e ``(q3 - q1) * multiplicador``.
 
     :param serie: Série de valores numéricos
     :param multiplicador: Intervalo do que é considerado aceitavel, sugestão 3.0
     :return: série sem outliers
     """
-    # Valores outliers
-    # q1, q3 = np.quantile(serie, [0.25, 0.75])
-    # IQR = (q3 - q1) * multiplicador
-    # limit_lower = q1 - IQR if q1 > IQR else 0
-    # limit_upper = q3 + IQR
     factor = multiplicador
     limit_upper = serie.mean() + serie.std() * factor
     limit_lower = serie.mean() - serie.std() * factor
@@ -270,7 +262,7 @@ def numeric_plot(serie: pd.Series, c='Green', outliers=True, mult=1.5):
 
     # Outliers
     if outliers:
-        serie = iqr(serie.copy(), multiplicador=mult)
+        serie = remove_outliers_zscore(serie.copy(), multiplicador=mult)
 
     serie = serie.loc[pd.notna(serie)].copy()
     df = serie.describe().reset_index()

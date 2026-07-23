@@ -12,18 +12,18 @@ copy-pasted version of this logic.
 """
 
 import argparse
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import TimeSeriesSplit, train_test_split
 from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.model_selection import TimeSeriesSplit, train_test_split
 
 from fraud_detection.evaluate import business_cost_curve, precision_at_k, threshold_for_daily_capacity
-from fraud_detection.features import add_temporal_features
+from fraud_detection.features import add_temporal_features, normalize_amount
 from fraud_detection.pipeline import build_pipeline
 from fraud_detection.registry import ModelArtifact, save_artifact
-from fraud_detection.schema import MODEL_FEATURE_COLUMNS, NON_FEATURE_COLS, TARGET_COL, TIMESTAMP_COL
+from fraud_detection.schema import MODEL_FEATURE_COLUMNS, TARGET_COL, TIMESTAMP_COL
 
 
 def load_dataset(path: str) -> pd.DataFrame:
@@ -31,6 +31,7 @@ def load_dataset(path: str) -> pd.DataFrame:
     df = df.drop_duplicates()
     df[TIMESTAMP_COL] = pd.to_datetime(df[TIMESTAMP_COL])
     df = df.sort_values(TIMESTAMP_COL).reset_index(drop=True)
+    df = normalize_amount(df)
     return add_temporal_features(df)
 
 
@@ -50,7 +51,8 @@ def time_series_cross_validate(X: pd.DataFrame, y: pd.Series, n_splits: int = 5)
         proba = pipeline.predict_proba(X.iloc[val_idx])[:, 1]
         scores.append(average_precision_score(y.iloc[val_idx], proba))
 
-    print(f"TimeSeriesSplit average precision: mean={np.mean(scores):.4f} folds={['%.4f' % s for s in scores]}")
+    folds = [f"{s:.4f}" for s in scores]
+    print(f"TimeSeriesSplit average precision: mean={np.mean(scores):.4f} folds={folds}")
 
 
 def main() -> None:
@@ -103,7 +105,7 @@ def main() -> None:
         feature_names=feature_cols,
         threshold=threshold,
         metadata={
-            "trained_at": datetime.now(timezone.utc).isoformat(),
+            "trained_at": datetime.now(UTC).isoformat(),
             "train_rows": int(len(X_train)),
             "test_rows": int(len(X_test)),
             "performance_metrics": metrics,

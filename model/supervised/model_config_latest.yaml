@@ -1,0 +1,157 @@
+version: '20260723_021625'
+model_type: XGBClassifier
+feature_names:
+- amount
+- is_legal_entity
+- is_mei
+- is_person
+- mc_weeks_signup
+- mc_atm_br_tx_out_count_lifetime
+- mc_credit_transfer_out_br_sum_last_30d
+- mc_billpay_br_sum_last_15d
+- mc_billpay_br_count_last_1y
+- mc_credit_transfer_out_br_sum_last_1y
+- mc_billpay_br_count_sanction_last_30d
+- mc_pur_br_count_last_1y
+- mc_billpay_br_count_last_15d
+- mc_atm_br_tx_out_count_last_1y
+- mc_sanction_count_last_2d
+- mc_credit_transfer_in_rounded_amounts_br_sum_last_30d
+- mc_pur_br_sum_last_15d
+- mc_credit_transfer_in_br_sum_last_180d
+- mc_credit_transfer_out_br_count_lifetime
+- mc_credit_transfer_out_br_count_sanction_last_30d
+- mc_credit_transfer_out_br_count_last_15d
+- mc_pur_br_count_last_15d
+- mc_pep_count_last_2d
+- mc_credit_transfer_in_br_sum_last_120d
+- mc_pur_br_count_lifetime
+- mc_credit_transfer_in_br_count_last_30d
+- mc_credit_transfer_in_br_sum_last_90d
+- mc_credit_transfer_out_br_count_last_1y
+- mc_billpay_br_sum_last_1y
+- mc_billpay_br_count_pep_br_last_30d
+- mc_credit_transfer_in_br_count_pep_br_last_30d
+- mc_credit_transfer_out_rounded_amounts_br_sum_last_30d
+- mc_credit_transfer_out_br_sum_last_15d
+- mc_credit_transfer_in_br_count_sanction_last_30d
+- mc_credit_transfer_in_br_sum_last_15d
+- mc_billpay_br_count_lifetime
+- mc_atm_br_tx_out_count_last_15d
+- mc_credit_transfer_out_rounded_amounts_br_count_last_30d
+- mc_credit_transfer_in_br_sum_last_60d
+- mc_pur_br_sum_last_1y
+- mc_credit_transfer_out_br_count_pep_br_last_30d
+- mc_chip_tx_succ_count_30d
+- mc_chip_tx_decl_ext_count_7d
+- mc_chip_tx_amount_local_decl_ext_sum_15d
+- mc_chip_tx_amount_succ_sum_7d
+- mc_chip_tx_amount_local_succ_sum_7d
+- mc_chip_tx_amount_local_succ_sum_15d
+- mc_chip_tx_amount_decl_ext_sum_30d
+- mc_chip_tx_amount_succ_sum_30d
+- mc_chip_tx_succ_count_7d
+- decline_ext_rate_30d
+- mc_tx_cp_mean_decl_ext_last_31d_mw
+- mc_tx_amount_sum_last_60m
+- mc_tx_amount_decl_ext_sum_lifetime
+- mc_tx_amount_succ_sum_last_30d
+- mc_tx_succ_count_last_24h
+- mc_tx_amount_succ_sum_last_14d
+- mc_tx_amount_fail_sum_last_60m
+- mc_tx_amount_succ_sum_last_60m
+- mc_tx_amount_succ_sum_last_2d
+- mc_tx_amount_succ_sum_last_90d
+- mc_tx_amount_fail_sum_last_14d
+- mc_tx_amount_succ_sum_lifetime
+- mc_tx_amount_pend_sum_last_2d
+- mc_tx_amount_decl_int_sum_lifetime
+- mc_tx_amount_sum_last_24h
+- mc_tx_amount_sum_lifetime
+- mc_tx_succ_count_last_14d
+- mc_tx_succ_count_lifetime
+- mc_tx_amount_succ_sum_last_24h
+- mc_tx_amount_pend_sum_last_14d
+- mc_tx_amount_decl_ext_sum_last_14d
+- mc_tx_amount_decl_ext_sum_last_24h
+- mc_tx_amount_decl_ext_sum_last_60m
+- mc_tx_succ_count_last_2d
+- mc_tx_amount_fail_sum_lifetime
+- mc_tx_succ_count_last_30d
+- mc_tx_amount_sum_last_2d
+- mc_tx_succ_count_last_365d
+- mc_tx_succ_count_last_60m
+- mc_tx_amount_sum_last_14d
+- mc_tx_cp_sum_decl_ext_last_24h
+- mc_tx_cp_dbt_sum_sq_decl_ext_last_30d
+- mc_tx_count_decl_ext_last_30d
+- mc_tx_cp_sum_decl_ext_last_30d
+- mc_tx_cp_count_decl_ext_last_24h
+- mc_tx_cp_dbt_sum_sq_fail_last_24h
+- mc_tx_cp_count_decl_ext_last_30d
+- mc_tx_cp_dbt_sum_sq_fail_last_14d
+- mc_merchants_ip_count_dist_shared_last_15d
+- mcc_sum_succ_1y
+- mcc_sum_sq_succ_30d
+- mcc_count_succ_1y
+- mcc_sum_sq_succ_1y
+- mcc_sum_succ_30d
+- is_weekend
+- is_night
+- month
+- day
+- hour
+threshold: 0.9191919191919192
+model_parameters:
+  objective: binary:logistic
+  base_score: null
+  booster: null
+  callbacks: null
+  colsample_bylevel: null
+  colsample_bynode: null
+  colsample_bytree: null
+  device: null
+  early_stopping_rounds: null
+  enable_categorical: true
+  eval_metric: aucpr
+  feature_types: null
+  feature_weights: null
+  gamma: null
+  grow_policy: null
+  importance_type: null
+  interaction_constraints: null
+  learning_rate: 0.1
+  max_bin: null
+  max_cat_threshold: null
+  max_cat_to_onehot: null
+  max_delta_step: null
+  max_depth: 10
+  max_leaves: null
+  min_child_weight: null
+  missing: .nan
+  monotone_constraints: null
+  multi_strategy: null
+  n_estimators: 300
+  n_jobs: null
+  num_parallel_tree: null
+  random_state: 42
+  reg_alpha: null
+  reg_lambda: null
+  sampling_method: null
+  scale_pos_weight: null
+  subsample: null
+  tree_method: null
+  validate_parameters: null
+  verbosity: null
+sampling_strategy: 0.25
+trained_at: '2026-07-23T02:16:25.116900+00:00'
+train_rows: 793572
+test_rows: 198393
+performance_metrics:
+  roc_auc: 0.9776344180523415
+  average_precision: 0.4231789278674369
+  precision_at_100: 0.77
+  n_test_days: 56
+  chosen_threshold: 0.9191919191919192
+max_daily_reviews: 100
+fp_review_cost_fraction: 0.1

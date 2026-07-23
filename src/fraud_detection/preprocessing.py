@@ -14,7 +14,6 @@ strategy learned there — including at serving time, where there is no label
 at all.
 """
 
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -41,7 +40,7 @@ class NullSignalImputer(BaseEstimator, TransformerMixin):
     def __init__(self, signal_ratio_threshold: float = DEFAULT_SIGNAL_RATIO_THRESHOLD):
         self.signal_ratio_threshold = signal_ratio_threshold
 
-    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> "NullSignalImputer":
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "NullSignalImputer":
         if y is None:
             raise ValueError(
                 "NullSignalImputer requires y at fit time to decide, per "

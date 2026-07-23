@@ -20,23 +20,21 @@ here are structural, not patches:
 import logging
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Dict
+from datetime import UTC, datetime
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.feature_store import CsvFeatureStore, FeatureStore
 from fraud_detection.config import settings
 from fraud_detection.features import add_temporal_features
 from fraud_detection.registry import ModelArtifact, load_artifact
 from fraud_detection.schema import TIMESTAMP_COL
 
-from app.feature_store import CsvFeatureStore, FeatureStore
-
 logger = logging.getLogger("fraud_detection.api")
 
-state: Dict[str, object] = {"artifact": None, "feature_store": None}
+state: dict[str, object] = {"artifact": None, "feature_store": None}
 
 
 @asynccontextmanager
@@ -71,10 +69,10 @@ class Transaction(BaseModel):
         }
     )
 
-    merchant_id: str = Field(..., description="Unique identifier for the merchant (merchant_code)")
+    merchant_id: str = Field(..., description="Unique identifier for the merchant")
     amount: float = Field(..., gt=0, description="Transaction amount in local currency")
     event_created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
+        default_factory=lambda: datetime.now(UTC),
         description="When the PIX was received; defaults to now for real-time scoring",
     )
 
@@ -137,7 +135,7 @@ async def predict_fraud(transaction: Transaction) -> FraudPredictionResponse:
         review_required=fraud_probability > artifact.threshold,
         threshold=artifact.threshold,
         model_version=artifact.metadata.get("trained_at", "unknown"),
-        timestamp=datetime.now(timezone.utc).isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )
 
 
@@ -162,7 +160,7 @@ async def health_check():
     """Health check endpoint."""
     if state.get("artifact") is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()}
 
 
 if __name__ == "__main__":

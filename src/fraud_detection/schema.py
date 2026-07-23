@@ -9,7 +9,9 @@ apart on which columns the model expects.
 # Never fed to the model.
 TARGET_COL = "infraction"
 TIMESTAMP_COL = "event_created_at"
-MERCHANT_ID_COL = "merchant_code"
+# Named "merchant_code" in the feature description CSV, but "merchant_id" in
+# the actual sumup_case.parquet columns — the real data is authoritative.
+MERCHANT_ID_COL = "merchant_id"
 NON_FEATURE_COLS = (TARGET_COL, TIMESTAMP_COL, MERCHANT_ID_COL)
 
 # Merchant-level attributes present on every transaction (not aggregates).
