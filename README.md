@@ -1,8 +1,6 @@
 # Fraud Detection System
 
-Real-time fraud detection for PIX transactions received by SumUp merchant accounts. See
-[plan.md](plan.md) for the full audit and improvement roadmap this codebase was refactored against.
-
+Real-time fraud detection for PIX transactions received by SumUp merchant accounts.
 ## Project Structure
 
 ```

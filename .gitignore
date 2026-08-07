@@ -17,3 +17,14 @@ model/supervised/merchant_features.csv
 
 .DS_Store
 /.idea/aws.xml
+tutorial
+notebooks/raw_transactions.csv
+notebooks/sampling_results.csv
+notebooks/sampling_comparison.csv
+notebooks/regression_model_selection_results.csv
+notebooks/prediction_results.csv
+notebooks/oulier_standarization_analysis.csv
+notebooks/null_analysis_results.csv
+notebooks/model_selection_results_unshufled.csv
+notebooks/model_selection_results.csv
+notebooks/high_risk_transactions.csv
